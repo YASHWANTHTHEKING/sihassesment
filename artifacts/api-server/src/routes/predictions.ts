@@ -6,11 +6,33 @@ import path from "path";
 
 const router: IRouter = Router();
 
+import fs from "fs";
+
+function findScriptPath(): string {
+  const candidates = [
+    path.resolve(process.cwd(), "../../ml-service/predict.py"),
+    path.resolve(process.cwd(), "ml-service/predict.py"),
+    path.resolve(process.cwd(), "../ml-service/predict.py"),
+  ];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return candidates[0];
+}
+
 function runPythonPredict(): Promise<{ success: boolean; count: number; message: string }> {
   return new Promise((resolve, reject) => {
-    const scriptPath = path.resolve(process.cwd(), "../../ml-service/predict.py");
-    const proc = spawn("python3", [scriptPath], {
-      env: { ...process.env },
+    const scriptPath = findScriptPath();
+    const pythonCommand = process.env.PYTHON_EXECUTABLE ?? (process.platform === "win32" ? "python" : "python3");
+    const databaseUrl = process.env.DATABASE_URL || "postgres://postgres:1234@localhost:5432/placement_tracker";
+
+    const proc = spawn(pythonCommand, [scriptPath], {
+      env: {
+        ...process.env,
+        DATABASE_URL: databaseUrl,
+      },
     });
 
     let stdout = "";
@@ -21,8 +43,15 @@ function runPythonPredict(): Promise<{ success: boolean; count: number; message:
 
     proc.on("close", (code) => {
       if (code !== 0) {
-        logger.error({ stderr, code }, "Python prediction script failed");
-        reject(new Error(stderr || `Python process exited with code ${code}`));
+        logger.error({ stdout, stderr, code }, "Python prediction script failed");
+        let msg = stderr.trim() || stdout.trim();
+        try {
+          const parsed = JSON.parse(stdout.trim());
+          if (parsed.error) msg = parsed.error;
+        } catch {
+          // ignore JSON parse error
+        }
+        reject(new Error(msg || `Python process exited with code ${code}`));
         return;
       }
       try {

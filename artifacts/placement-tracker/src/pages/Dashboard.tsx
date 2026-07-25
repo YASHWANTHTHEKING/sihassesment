@@ -107,21 +107,21 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
               label="Total Applications"
-              value={stats.totalApplications.toLocaleString()}
-              sub={`${stats.totalStudents} unique students`}
+              value={stats.totalApplications != null ? stats.totalApplications.toLocaleString() : '—'}
+              sub={`${stats.totalStudents ?? '—'} unique students`}
               icon={Users}
             />
             <StatCard
               label="Offers Extended"
-              value={stats.totalOffers.toLocaleString()}
-              sub={`${stats.totalCompanies} companies`}
+              value={stats.totalOffers != null ? stats.totalOffers.toLocaleString() : '—'}
+              sub={`${stats.totalCompanies ?? '—'} companies`}
               icon={TrendingUp}
               accent
             />
             <StatCard
               label="Offer Rate"
-              value={`${stats.offerRate.toFixed(1)}%`}
-              sub={`${stats.pendingApplications} still pending`}
+              value={stats.offerRate != null ? `${stats.offerRate.toFixed(1)}%` : '—'}
+              sub={`${stats.pendingApplications ?? '—'} still pending`}
               icon={Package}
             />
             <StatCard
@@ -155,7 +155,7 @@ export default function Dashboard() {
               <div className="h-52 flex items-center justify-center">
                 <div className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Loading pipeline...</div>
               </div>
-            ) : pipeline && pipeline.length > 0 ? (
+            ) : Array.isArray(pipeline) && pipeline.length > 0 ? (
               <div className="h-52">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={pipeline} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
@@ -197,7 +197,7 @@ export default function Dashboard() {
             )}
 
             {/* Legend */}
-            {pipeline && pipeline.length > 0 && (
+            {Array.isArray(pipeline) && pipeline.length > 0 && (
               <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3">
                 {pipeline.map((p) => (
                   <div key={p.stage} className="flex items-center gap-1.5">
@@ -229,7 +229,7 @@ export default function Dashboard() {
                   <div key={i} className="h-10 rounded animate-pulse" style={{ backgroundColor: 'hsl(var(--muted))' }} />
                 ))}
               </div>
-            ) : recent && recent.length > 0 ? (
+            ) : Array.isArray(recent) && recent.length > 0 ? (
               <div className="flex-1 overflow-auto space-y-0 -mx-4">
                 {recent.slice(0, 10).map((app) => (
                   <Link
@@ -291,7 +291,7 @@ export default function Dashboard() {
 
           {breakdownLoading ? (
             <SkeletonTable rows={5} cols={6} />
-          ) : breakdown && breakdown.length > 0 ? (
+          ) : Array.isArray(breakdown) && breakdown.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-sm" data-testid="company-breakdown-table">
                 <thead>

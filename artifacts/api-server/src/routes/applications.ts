@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, ilike, and, SQL } from "drizzle-orm";
+import { eq, ilike, and, or, SQL } from "drizzle-orm";
 import { db, applicationsTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 import {
@@ -57,7 +57,14 @@ router.get("/applications", async (req, res): Promise<void> => {
     conditions.push(eq(applicationsTable.offerStatus, offer_status));
   }
   if (search) {
-    conditions.push(ilike(applicationsTable.studentName, `%${search}%`));
+    conditions.push(
+      or(
+        ilike(applicationsTable.studentName, `%${search}%`),
+        ilike(applicationsTable.company, `%${search}%`),
+        ilike(applicationsTable.studentId, `%${search}%`),
+        ilike(applicationsTable.branch, `%${search}%`)
+      )!
+    );
   }
 
   const query = db.select().from(applicationsTable);

@@ -62,7 +62,7 @@ router.get("/dashboard/recent", async (_req, res): Promise<void> => {
   const rows = await db
     .select()
     .from(applicationsTable)
-    .orderBy(sql`${applicationsTable.updatedAt} DESC`)
+    .orderBy(sql`${applicationsTable.createdAt} DESC`)
     .limit(10);
 
   res.json(
