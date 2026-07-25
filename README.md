@@ -127,9 +127,26 @@ docker-compose up --build
 
 ---
 
-## 📸 Screenshots Guidance for Submission
+## 📸 Application Screenshots
 
-1. **Dashboard View**: Overview stats, selection rates, and company breakdown.
-2. **Applications & Search**: Multi-field search showing filtered results (e.g. search `"Zenith"`).
-3. **Companies Page**: Company performance table, offer rate bars, and sorting.
-4. **ML Predictions Page**: High-risk applications table with confidence indicators and re-run trigger.
+### 1. Placement Dashboard
+![Dashboard Overview](screenshots/dashboard.png)
+*Overview of placement statistics, drive metrics, selection rates, and top hiring companies.*
+
+---
+
+### 2. Applications Management & Search
+![Applications List & Search](screenshots/applications.png)
+*Multi-field search (Student Name, Company, Roll Number, Branch) and stage/offer status filters.*
+
+---
+
+### 3. Companies Analytics & Performance
+![Companies Workspace](screenshots/companies.png)
+*Company drives summary, offer rate percentage indicators, performance filter, and sorting.*
+
+---
+
+### 4. ML Placement Risk Predictions
+![ML Predictions](screenshots/predictions.png)
+*RandomForestClassifier prediction output identifying high-risk applications requiring coordinator follow-up.*
