@@ -26,7 +26,7 @@ function runPythonPredict(): Promise<{ success: boolean; count: number; message:
   return new Promise((resolve, reject) => {
     const scriptPath = findScriptPath();
     const pythonCommand = process.env.PYTHON_EXECUTABLE ?? (process.platform === "win32" ? "python" : "python3");
-    const databaseUrl = process.env.DATABASE_URL || "postgres://postgres:1234@localhost:5432/placement_tracker";
+    const databaseUrl = process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/placement_tracker";
 
     const proc = spawn(pythonCommand, [scriptPath], {
       env: {

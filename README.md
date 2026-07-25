@@ -78,7 +78,7 @@ cp .env.example .env
 ```
 Ensure PostgreSQL has a database named `placement_tracker`:
 ```env
-DATABASE_URL=postgres://postgres:1234@localhost:5432/placement_tracker
+DATABASE_URL=postgres://<username>:<password>@localhost:5432/placement_tracker
 ```
 
 ### Step 3: Seed Sample Dataset (100 Records)
