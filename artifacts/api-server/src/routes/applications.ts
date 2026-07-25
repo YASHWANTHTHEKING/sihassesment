@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, ilike, and, or, SQL } from "drizzle-orm";
-import { db, applicationsTable } from "@workspace/db";
+import { db, applicationsTable, predictionsTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 import {
   ListApplicationsQueryParams,
@@ -173,6 +173,18 @@ router.patch("/applications/:id", async (req, res): Promise<void> => {
     return;
   }
 
+  // Synchronize basic prediction fields if studentName, company or stage updated
+  const predUpdate: Record<string, unknown> = {};
+  if (data.studentName !== undefined) predUpdate.studentName = data.studentName;
+  if (data.company !== undefined) predUpdate.company = data.company;
+  if (data.stage !== undefined) predUpdate.stage = data.stage;
+  if (Object.keys(predUpdate).length > 0) {
+    await db
+      .update(predictionsTable)
+      .set(predUpdate)
+      .where(eq(predictionsTable.applicationId, params.data.id));
+  }
+
   res.json(UpdateApplicationResponse.parse(mapApplication(app)));
 });
 
@@ -192,6 +204,11 @@ router.delete("/applications/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Application not found" });
     return;
   }
+
+  // Remove corresponding prediction record
+  await db
+    .delete(predictionsTable)
+    .where(eq(predictionsTable.applicationId, params.data.id));
 
   res.sendStatus(204);
 });

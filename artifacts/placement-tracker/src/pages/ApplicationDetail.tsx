@@ -6,6 +6,7 @@ import {
   useUpdateApplication,
   useDeleteApplication,
   getListApplicationsQueryKey,
+  getListPredictionsQueryKey,
   getGetDashboardStatsQueryKey,
 } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -98,6 +99,7 @@ export default function ApplicationDetail() {
       onSuccess: (updated) => {
         queryClient.setQueryData(getGetApplicationQueryKey(id), updated);
         queryClient.invalidateQueries({ queryKey: getListApplicationsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListPredictionsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetDashboardStatsQueryKey() });
         if (field === 'stage') setEditingStage(false);
         if (field === 'offer') setEditingOffer(false);
@@ -115,6 +117,7 @@ export default function ApplicationDetail() {
     deleteMutation.mutate({ id }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListApplicationsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListPredictionsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetDashboardStatsQueryKey() });
         toast({ title: 'Deleted', description: 'Application record removed.' });
         setLocation('/applications');
