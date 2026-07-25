@@ -3,13 +3,22 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: College Placement Drive and Student Application Tracker API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: applications
+    description: Placement application records
+  - name: companies
+    description: Company information
+  - name: dashboard
+    description: Aggregated statistics and summaries
+  - name: predictions
+    description: ML prediction results
+
 paths:
   /healthz:
     get:
@@ -24,13 +33,472 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /applications:
+    get:
+      operationId: listApplications
+      tags: [applications]
+      summary: List all placement applications
+      parameters:
+        - name: stage
+          in: query
+          schema:
+            type: string
+        - name: company
+          in: query
+          schema:
+            type: string
+        - name: offer_status
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+    post:
+      operationId: createApplication
+      tags: [applications]
+      summary: Create a new placement application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationInput"
+      responses:
+        "201":
+          description: Application created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /applications/{id}:
+    get:
+      operationId: getApplication
+      tags: [applications]
+      summary: Get a single application
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Application details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateApplication
+      tags: [applications]
+      summary: Update an application (stage, offer status, package)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationUpdate"
+      responses:
+        "200":
+          description: Updated application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteApplication
+      tags: [applications]
+      summary: Delete an application
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /companies:
+    get:
+      operationId: listCompanies
+      tags: [companies]
+      summary: List all unique companies that have had drives
+      responses:
+        "200":
+          description: List of company names with drive counts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CompanySummary"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Overall placement statistics summary
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/pipeline:
+    get:
+      operationId: getPipeline
+      tags: [dashboard]
+      summary: Applications grouped by stage
+      responses:
+        "200":
+          description: Stage breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PipelineStage"
+
+  /dashboard/recent:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Recently updated applications
+      responses:
+        "200":
+          description: Recent activity feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+
+  /dashboard/company-breakdown:
+    get:
+      operationId: getCompanyBreakdown
+      tags: [dashboard]
+      summary: Application counts and offer rates per company
+      responses:
+        "200":
+          description: Per-company breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CompanyBreakdown"
+
+  /predictions:
+    get:
+      operationId: listPredictions
+      tags: [predictions]
+      summary: Get latest ML predictions for all applications
+      responses:
+        "200":
+          description: Prediction results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Prediction"
+
+  /predictions/run:
+    post:
+      operationId: runPredictions
+      tags: [predictions]
+      summary: Trigger ML model to re-run predictions
+      responses:
+        "200":
+          description: Prediction run complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PredictionRunResult"
+        "500":
+          description: Prediction error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    Application:
+      type: object
+      required:
+        - id
+        - applicationId
+        - studentId
+        - studentName
+        - company
+        - driveDate
+        - stage
+        - offerStatus
+      properties:
+        id:
+          type: integer
+        applicationId:
+          type: string
+        studentId:
+          type: string
+        studentName:
+          type: string
+        company:
+          type: string
+        driveDate:
+          type: string
+          format: date
+        stage:
+          type: string
+          enum: [Applied, Shortlisted, Interview, Selected, Rejected]
+        offerStatus:
+          type: string
+          enum: [Pending, Offered, Rejected, Withdrawn]
+        package:
+          type: ["number", "null"]
+          description: Annual package in LPA (Lakhs Per Annum)
+        cgpa:
+          type: ["number", "null"]
+        branch:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ApplicationInput:
+      type: object
+      required:
+        - studentId
+        - studentName
+        - company
+        - driveDate
+        - stage
+        - offerStatus
+      properties:
+        studentId:
+          type: string
+          minLength: 1
+        studentName:
+          type: string
+          minLength: 1
+        company:
+          type: string
+          minLength: 1
+        driveDate:
+          type: string
+          format: date
+        stage:
+          type: string
+          enum: [Applied, Shortlisted, Interview, Selected, Rejected]
+        offerStatus:
+          type: string
+          enum: [Pending, Offered, Rejected, Withdrawn]
+        package:
+          type: ["number", "null"]
+        cgpa:
+          type: ["number", "null"]
+        branch:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+
+    ApplicationUpdate:
+      type: object
+      properties:
+        studentName:
+          type: string
+          minLength: 1
+        company:
+          type: string
+          minLength: 1
+        driveDate:
+          type: string
+          format: date
+        stage:
+          type: string
+          enum: [Applied, Shortlisted, Interview, Selected, Rejected]
+        offerStatus:
+          type: string
+          enum: [Pending, Offered, Rejected, Withdrawn]
+        package:
+          type: ["number", "null"]
+        cgpa:
+          type: ["number", "null"]
+        branch:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+
+    CompanySummary:
+      type: object
+      required: [company, driveCount, applicationCount]
+      properties:
+        company:
+          type: string
+        driveCount:
+          type: integer
+        applicationCount:
+          type: integer
+        offerCount:
+          type: integer
+        latestDriveDate:
+          type: ["string", "null"]
+
+    DashboardStats:
+      type: object
+      required:
+        - totalApplications
+        - totalStudents
+        - totalCompanies
+        - totalOffers
+        - offerRate
+        - avgPackage
+        - pendingApplications
+      properties:
+        totalApplications:
+          type: integer
+        totalStudents:
+          type: integer
+        totalCompanies:
+          type: integer
+        totalOffers:
+          type: integer
+        offerRate:
+          type: number
+          description: Percentage of applications that resulted in offers
+        avgPackage:
+          type: ["number", "null"]
+          description: Average package in LPA for selected students
+        pendingApplications:
+          type: integer
+
+    PipelineStage:
+      type: object
+      required: [stage, count]
+      properties:
+        stage:
+          type: string
+        count:
+          type: integer
+        percentage:
+          type: number
+
+    CompanyBreakdown:
+      type: object
+      required: [company, total, offers, rejections, pending]
+      properties:
+        company:
+          type: string
+        total:
+          type: integer
+        offers:
+          type: integer
+        rejections:
+          type: integer
+        pending:
+          type: integer
+        offerRate:
+          type: number
+        avgPackage:
+          type: ["number", "null"]
+
+    Prediction:
+      type: object
+      required: [applicationId, studentName, company, stage, riskLevel, confidence, needsAttention]
+      properties:
+        applicationId:
+          type: integer
+        studentName:
+          type: string
+        company:
+          type: string
+        stage:
+          type: string
+        riskLevel:
+          type: string
+          enum: [Low, Medium, High]
+        confidence:
+          type: number
+          description: Model confidence between 0 and 1
+        needsAttention:
+          type: boolean
+        predictedOutcome:
+          type: ["string", "null"]
+
+    PredictionRunResult:
+      type: object
+      required: [success, count, message]
+      properties:
+        success:
+          type: boolean
+        count:
+          type: integer
+        message:
+          type: string
