@@ -1,30 +1,21 @@
-# Multi-stage Dockerfile for Placement Tracker
+FROM node:22-alpine
 
-# Step 1: Base image with Node.js and Python
-FROM node:22-alpine AS base
-RUN apk add --no-linux-headers --no-cache python3 py3-pip py3-scikit-learn py3-numpy
+# Install Python & ML dependencies on Alpine
+RUN apk add --no-cache python3 py3-pip py3-scikit-learn py3-numpy g++ make
 RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Step 2: Install dependencies first (layer caching optimization)
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY artifacts/api-server/package.json ./artifacts/api-server/
-COPY artifacts/placement-tracker/package.json ./artifacts/placement-tracker/
-COPY lib/db/package.json ./lib/db/
-COPY lib/api-zod/package.json ./lib/api-zod/
-COPY lib/api-client-react/package.json ./lib/api-client-react/
-COPY ml-service/requirements.txt ./ml-service/
-
-RUN pnpm install --frozen-lockfile
-
-# Step 3: Copy source files and build
+# Copy repository source files
 COPY . .
+
+# Install dependencies and build monorepo packages
+RUN pnpm install
 RUN pnpm run build
 
-# Step 4: Production runner
-EXPOSE 3000 5173
-ENV NODE_ENV=production
+EXPOSE 3000
+
 ENV PORT=3000
+ENV NODE_ENV=production
 
 CMD ["pnpm", "--filter", "@workspace/api-server", "start"]
