@@ -150,3 +150,21 @@ docker-compose up --build
 ### 4. ML Placement Risk Predictions
 ![ML Predictions](screenshots/predictions.png)
 *RandomForestClassifier prediction output identifying high-risk applications requiring coordinator follow-up.*
+
+---
+
+## 🎥 Demo Video
+
+Watch the complete project demonstration here:
+
+**🔗 Demo:** https://drive.google.com/file/d/154rghlBCpFO1MD5EC5KA315DAFJSr8w-/view?usp=sharing
+
+The demo showcases:
+- ✅ Placement dashboard overview
+- ✅ Student application registration
+- ✅ Search and filtering functionality
+- ✅ Company analytics
+- ✅ Machine learning risk predictions
+- ✅ End-to-end workflow from data entry to prediction
+
+---
